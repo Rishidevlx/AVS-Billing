@@ -69,8 +69,11 @@ export default function Navbar({ onToggleSidebar, isSidebarCollapsed }) {
     });
 
     if (result.isConfirmed) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('logged_in_user_name');
       showToast('Logged out successfully', 'info');
-      navigate('/login');
+      navigate('/login', { replace: true });
     }
   };
 

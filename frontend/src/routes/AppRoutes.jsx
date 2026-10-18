@@ -10,37 +10,56 @@ import CreateProduct from '../pages/inventory/CreateProduct';
 import AllProducts from '../pages/inventory/AllProducts';
 import ProfileSettings from '../pages/settings/ProfileSettings';
 import SystemSettings from '../pages/settings/SystemSettings';
+import ProtectedRoute, { PublicRoute } from '../components/auth/ProtectedRoute';
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public Login Route */}
-      <Route path="/login" element={<Login />} />
+      {/* Public Login Route (Redirects to /dashboard if already logged in) */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
 
-      {/* Authenticated / App Layout Routes */}
-      <Route element={<MainLayout />}>
-        {/* Default route redirects to dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        
-        {/* 1. Dashboard */}
-        <Route path="/dashboard" element={<Dashboard />} />
+      {/* Authenticated / App Layout Routes protected by ProtectedRoute */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<MainLayout />}>
+          {/* Default authenticated route */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* 1. Dashboard */}
+          <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* 2. Sales Routes */}
-        <Route path="/sales/outward" element={<Outward />} />
-        <Route path="/sales/outward-list" element={<OutwardList />} />
+          {/* 2. Sales Routes */}
+          <Route path="/sales/outward" element={<Outward />} />
+          <Route path="/sales/outward-list" element={<OutwardList />} />
 
-        {/* 3. Inventory Routes */}
-        <Route path="/inventory/category" element={<Category />} />
-        <Route path="/inventory/create-product" element={<CreateProduct />} />
-        <Route path="/inventory/products" element={<AllProducts />} />
+          {/* 3. Inventory Routes */}
+          <Route path="/inventory/category" element={<Category />} />
+          <Route path="/inventory/create-product" element={<CreateProduct />} />
+          <Route path="/inventory/products" element={<AllProducts />} />
 
-        {/* 4. Settings Routes */}
-        <Route path="/settings/profile" element={<ProfileSettings />} />
-        <Route path="/settings/system" element={<SystemSettings />} />
+          {/* 4. Settings Routes */}
+          <Route path="/settings/profile" element={<ProfileSettings />} />
+          <Route path="/settings/system" element={<SystemSettings />} />
+        </Route>
       </Route>
 
-      {/* Catch-all Fallback */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Catch-all Fallback: Redirect to /login if unauthenticated, or /dashboard if authenticated */}
+      <Route
+        path="*"
+        element={
+          localStorage.getItem('auth_token') ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
     </Routes>
   );
 }

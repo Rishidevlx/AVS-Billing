@@ -43,10 +43,20 @@ export default function Login() {
         throw new Error(data.message || 'Login failed');
       }
 
+      // Save authenticated session token & user info
+      const authToken = data.accessToken || 'auth_active_session';
+      localStorage.setItem('auth_token', authToken);
+      if (data.user) {
+        localStorage.setItem('auth_user', JSON.stringify(data.user));
+        if (data.user.fullName || data.user.username) {
+          localStorage.setItem('logged_in_user_name', data.user.fullName || data.user.username);
+        }
+      }
+
       // Successful login toast & redirect to dashboard panel
       showToast(data.message || 'Signed in successfully!', 'success');
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }, 500);
     } catch (err) {
       showToast(err.message || 'Authentication failed', 'error');
