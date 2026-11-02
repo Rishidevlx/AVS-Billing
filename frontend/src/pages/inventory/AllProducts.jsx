@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiTrash2, FiEdit2, FiRefreshCw } from 'react-icons/fi';
 import { Button, Table, Badge, Pagination, SearchInput } from '../../components/ui';
 import { showToast, showConfirm } from '../../utils/alert';
+import { apiFetch } from '../../utils/api';
 import ProductKpiCards from './components/ProductKpiCards';
 
 export default function AllProducts() {
@@ -33,9 +34,7 @@ export default function AllProducts() {
   const fetchProductsData = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${apiBase}/api/v1/products`, {
-        credentials: 'include',
-      });
+      const res = await apiFetch('/api/v1/products');
       const data = await res.json();
 
       if (res.ok && data.success) {
@@ -94,9 +93,8 @@ export default function AllProducts() {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`${apiBase}/api/v1/products/${product.id}`, {
+        const res = await apiFetch(`/api/v1/products/${product.id}`, {
           method: 'DELETE',
-          credentials: 'include',
         });
         const data = await res.json();
 

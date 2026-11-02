@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'rinvox_access_secret_key_default';
-const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
+const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES_IN || '24h';
 
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'rinvox_refresh_secret_key_default';
 const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES_IN || '7d';

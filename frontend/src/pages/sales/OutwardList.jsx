@@ -13,6 +13,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import { Button, Table, Pagination, SearchInput, Checkbox } from '../../components/ui';
 import { showToast, showConfirm } from '../../utils/alert';
+import { apiFetch } from '../../utils/api';
 import OutwardKpiCards from './components/OutwardKpiCards';
 
 export default function OutwardList() {
@@ -49,9 +50,7 @@ export default function OutwardList() {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const res = await fetch(`${apiBase}/api/v1/company`, {
-          credentials: 'include',
-        });
+        const res = await apiFetch('/api/v1/company');
         if (res.ok) {
           const result = await res.json();
           if (result.data?.companyName) {
@@ -71,9 +70,7 @@ export default function OutwardList() {
   const fetchInvoices = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/v1/invoices`, {
-        credentials: 'include',
-      });
+      const res = await apiFetch('/api/v1/invoices');
       const data = await res.json();
 
       let list = [];
@@ -335,9 +332,7 @@ export default function OutwardList() {
     let target = inv;
     if ((!target.items || target.items.length === 0) && target.id) {
       try {
-        const res = await fetch(`${apiBase}/api/v1/invoices/${target.id}`, {
-          credentials: 'include',
-        });
+        const res = await apiFetch(`/api/v1/invoices/${target.id}`);
         if (res.ok) {
           const data = await res.json();
           if (data.data) {
@@ -365,9 +360,8 @@ export default function OutwardList() {
     if (result.isConfirmed) {
       try {
         if (inv.id) {
-          await fetch(`${apiBase}/api/v1/invoices/${inv.id}`, {
+          await apiFetch(`/api/v1/invoices/${inv.id}`, {
             method: 'DELETE',
-            credentials: 'include',
           });
         }
 

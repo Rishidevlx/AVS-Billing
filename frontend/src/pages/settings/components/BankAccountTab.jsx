@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fi';
 import { Input, Button } from '../../../components/ui';
 import { showToast } from '../../../utils/alert';
+import { apiFetch } from '../../../utils/api';
 import { bankAccountSchema } from '../../../validations/settings.validation';
 
 export default function BankAccountTab() {
@@ -32,14 +33,7 @@ export default function BankAccountTab() {
   useEffect(() => {
     const fetchBankData = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-        const response = await fetch(`${apiBase}/api/v1/bank`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+        const response = await apiFetch('/api/v1/bank');
 
         if (response.ok) {
           const result = await response.json();
@@ -95,14 +89,9 @@ export default function BankAccountTab() {
     setIsLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${apiBase}/api/v1/bank`, {
+      const response = await apiFetch('/api/v1/bank', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(bankData),
+        body: bankData,
       });
 
       const result = await response.json();

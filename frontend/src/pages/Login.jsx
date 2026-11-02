@@ -46,6 +46,9 @@ export default function Login() {
       // Save authenticated session token & user info
       const authToken = data.accessToken || 'auth_active_session';
       localStorage.setItem('auth_token', authToken);
+      if (data.refreshToken) {
+        localStorage.setItem('refresh_token', data.refreshToken);
+      }
       if (data.user) {
         localStorage.setItem('auth_user', JSON.stringify(data.user));
         if (data.user.fullName || data.user.username) {

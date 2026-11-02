@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiRotateCcw, FiCheck } from 'react-icons/fi';
 import { Input, Button, Table } from '../../components/ui';
 import { showToast, showConfirm } from '../../utils/alert';
+import { apiFetch } from '../../utils/api';
 import { categorySchema } from '../../validations/category.validation';
 
 export default function Category() {
@@ -21,11 +22,7 @@ export default function Category() {
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${apiBase}/api/v1/categories`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
+      const res = await apiFetch('/api/v1/categories');
       const data = await res.json();
       if (res.ok && data.success) {
         setCategories(data.data || []);
@@ -67,21 +64,19 @@ export default function Category() {
       // 1. Client-side Yup validation
       await categorySchema.validate(formData, { abortEarly: false });
 
-      const url = editingId
-        ? `${apiBase}/api/v1/categories/${editingId}`
-        : `${apiBase}/api/v1/categories`;
+      const endpoint = editingId
+        ? `/api/v1/categories/${editingId}`
+        : `/api/v1/categories`;
 
       const method = editingId ? 'PUT' : 'POST';
 
       // 2. Call Backend API
-      const res = await fetch(url, {
+      const res = await apiFetch(endpoint, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
+        body: {
           name: formData.name.trim(),
           description: formData.description.trim(),
-        }),
+        },
       });
 
       const result = await res.json();
@@ -129,10 +124,8 @@ export default function Category() {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`${apiBase}/api/v1/categories/${category.id}`, {
+        const res = await apiFetch(`/api/v1/categories/${category.id}`, {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
         });
         const data = await res.json();
 

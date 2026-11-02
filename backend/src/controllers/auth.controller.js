@@ -19,6 +19,7 @@ export const login = async (req, res, next) => {
       message: `Welcome back, ${result.user.fullName || result.user.username}!`,
       user: result.user,
       accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
     });
   } catch (err) {
     next(err);

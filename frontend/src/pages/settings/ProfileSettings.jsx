@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fi';
 import { Input, Button } from '../../components/ui';
 import { showToast } from '../../utils/alert';
+import { apiFetch } from '../../utils/api';
 
 // Yup validation schema for password change
 const passwordSchema = yup.object().shape({
@@ -76,14 +77,9 @@ export default function ProfileSettings() {
     setIsLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${apiBase}/api/v1/auth/change-password`, {
+      const response = await apiFetch('/api/v1/auth/change-password', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData),
+        body: formData,
       });
 
       const data = await response.json();

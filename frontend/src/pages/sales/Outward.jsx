@@ -18,6 +18,7 @@ import Swal from 'sweetalert2';
 import { Input, Button, Checkbox, Combobox } from '../../components/ui';
 import { showToast, showConfirm } from '../../utils/alert';
 import { numberToIndianWords } from '../../utils/numberToWords';
+import { apiFetch } from '../../utils/api';
 import { PaymentReceiptModal } from '../../components/bill';
 
 export default function Outward() {
@@ -37,8 +38,8 @@ export default function Outward() {
     const fetchCompanyAndBank = async () => {
       try {
         const [compRes, bankRes] = await Promise.all([
-          fetch(`${apiBase}/api/v1/company`, { credentials: 'include' }),
-          fetch(`${apiBase}/api/v1/bank`, { credentials: 'include' }),
+          apiFetch('/api/v1/company'),
+          apiFetch('/api/v1/bank'),
         ]);
         if (compRes.ok) {
           const compData = await compRes.json();
@@ -104,9 +105,7 @@ export default function Outward() {
   useEffect(() => {
     const fetchNumbering = async () => {
       try {
-        const res = await fetch(`${apiBase}/api/v1/numbering`, {
-          credentials: 'include',
-        });
+        const res = await apiFetch('/api/v1/numbering');
         if (res.ok) {
           const result = await res.json();
           if (result.data) {
@@ -144,9 +143,7 @@ export default function Outward() {
       // If items are missing from state, fetch complete record from backend
       if ((!editInv.items || editInv.items.length === 0) && editInv.id) {
         try {
-          const res = await fetch(`${apiBase}/api/v1/invoices/${editInv.id}`, {
-            credentials: 'include',
-          });
+          const res = await apiFetch(`/api/v1/invoices/${editInv.id}`);
           if (res.ok) {
             const data = await res.json();
             if (data.data) {
@@ -204,8 +201,8 @@ export default function Outward() {
       setIsLoadingData(true);
       try {
         const [prodRes, catRes] = await Promise.all([
-          fetch(`${apiBase}/api/v1/products`, { credentials: 'include' }),
-          fetch(`${apiBase}/api/v1/categories`, { credentials: 'include' }),
+          apiFetch('/api/v1/products'),
+          apiFetch('/api/v1/categories'),
         ]);
 
         if (prodRes.ok) {
@@ -541,16 +538,14 @@ export default function Outward() {
       };
 
       const isEditing = Boolean(editingInvoiceId);
-      const url = isEditing
-        ? `${apiBase}/api/v1/invoices/${editingInvoiceId}`
-        : `${apiBase}/api/v1/invoices`;
+      const endpoint = isEditing
+        ? `/api/v1/invoices/${editingInvoiceId}`
+        : `/api/v1/invoices`;
       const method = isEditing ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(endpoint, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
+        body: payload,
       });
       const resData = await res.json();
       if (!res.ok || !resData.success) {
@@ -607,7 +602,7 @@ export default function Outward() {
       // Fetch next numbering sequence ONLY if creating a brand new bill
       if (!isEditing) {
         try {
-          const numRes = await fetch(`${apiBase}/api/v1/numbering`, { credentials: 'include' });
+          const numRes = await apiFetch('/api/v1/numbering');
           if (numRes.ok) {
             const numData = await numRes.json();
             if (numData.data) {

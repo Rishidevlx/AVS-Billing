@@ -20,6 +20,7 @@ import {
 import { FaWhatsapp } from 'react-icons/fa';
 import ProductKpiCards from './inventory/components/ProductKpiCards';
 import { showToast } from '../utils/alert';
+import { apiFetch } from '../utils/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -74,9 +75,7 @@ export default function Dashboard() {
       if (sDate) params.append('startDate', sDate);
       if (eDate) params.append('endDate', eDate);
 
-      const res = await fetch(`${apiBase}/api/v1/dashboard/summary?${params.toString()}`, {
-        credentials: 'include',
-      });
+      const res = await apiFetch(`/api/v1/dashboard/summary?${params.toString()}`);
       const json = await res.json();
       if (res.ok && json.success && json.data) {
         setData(json.data);

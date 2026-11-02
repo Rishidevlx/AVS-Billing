@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { FiCheck, FiRotateCcw, FiArrowLeft } from 'react-icons/fi';
 import { Input, Select, Toggle, Button } from '../../components/ui';
 import { showToast } from '../../utils/alert';
+import { apiFetch } from '../../utils/api';
 import { productSchema } from '../../validations/product.validation';
 
 // Standard unit options: PCS, BOX, PACKET, PKT, TIN
@@ -53,9 +54,7 @@ export default function CreateProduct() {
     const loadCategories = async () => {
       setIsLoadingCategories(true);
       try {
-        const res = await fetch(`${apiBase}/api/v1/categories`, {
-          credentials: 'include',
-        });
+        const res = await apiFetch('/api/v1/categories');
         if (res.ok) {
           const result = await res.json();
           if (result.data && result.data.length > 0) {
@@ -122,20 +121,16 @@ export default function CreateProduct() {
       // 1. Client-side Yup validation
       await productSchema.validate(formData, { abortEarly: false });
 
-      const url = isEditing
-        ? `${apiBase}/api/v1/products/${editingProduct.id}`
-        : `${apiBase}/api/v1/products`;
+      const endpoint = isEditing
+        ? `/api/v1/products/${editingProduct.id}`
+        : `/api/v1/products`;
 
       const method = isEditing ? 'PUT' : 'POST';
 
       // 2. Call Backend API
-      const res = await fetch(url, {
+      const res = await apiFetch(endpoint, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
+        body: {
           name: formData.name.trim(),
           category: formData.category.trim(),
           brand: formData.brand.trim() || null,
@@ -143,7 +138,7 @@ export default function CreateProduct() {
           unit: formData.unit,
           sellingPrice: Number(formData.sellingPrice),
           status: Boolean(formData.status),
-        }),
+        },
       });
 
       const data = await res.json();

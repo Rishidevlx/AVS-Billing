@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fi';
 import { Input, Button } from '../../../components/ui';
 import { showToast } from '../../../utils/alert';
+import { apiFetch } from '../../../utils/api';
 import { numberingSchema } from '../../../validations/settings.validation';
 
 export default function NumberingTab() {
@@ -39,14 +40,7 @@ export default function NumberingTab() {
   useEffect(() => {
     const fetchNumberingData = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-        const response = await fetch(`${apiBase}/api/v1/numbering`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+        const response = await apiFetch('/api/v1/numbering');
 
         if (response.ok) {
           const result = await response.json();
@@ -78,13 +72,8 @@ export default function NumberingTab() {
   const handleResetSequence = async () => {
     setIsResetting(true);
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${apiBase}/api/v1/numbering/reset`, {
+      const response = await apiFetch('/api/v1/numbering/reset', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       });
 
       if (response.ok) {
@@ -125,17 +114,12 @@ export default function NumberingTab() {
     setIsLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${apiBase}/api/v1/numbering`, {
+      const response = await apiFetch('/api/v1/numbering', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
+        body: {
           invoicePrefix: numberingData.invoicePrefix,
           currentSequence: sequence,
-        }),
+        },
       });
 
       const result = await response.json();

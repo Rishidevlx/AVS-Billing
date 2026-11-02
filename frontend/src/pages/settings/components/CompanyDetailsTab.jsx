@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fi';
 import { Input, Button } from '../../../components/ui';
 import { showToast } from '../../../utils/alert';
+import { apiFetch } from '../../../utils/api';
 import { companyDetailsSchema } from '../../../validations/settings.validation';
 
 export default function CompanyDetailsTab() {
@@ -40,14 +41,7 @@ export default function CompanyDetailsTab() {
   useEffect(() => {
     const fetchCompanyData = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-        const response = await fetch(`${apiBase}/api/v1/company`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+        const response = await apiFetch('/api/v1/company');
 
         if (response.ok) {
           const result = await response.json();
@@ -163,14 +157,9 @@ export default function CompanyDetailsTab() {
     setIsLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${apiBase}/api/v1/company`, {
+      const response = await apiFetch('/api/v1/company', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(companyData),
+        body: companyData,
       });
 
       const result = await response.json();
