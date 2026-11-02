@@ -5,10 +5,12 @@ import { Input, Select, Toggle, Button } from '../../components/ui';
 import { showToast } from '../../utils/alert';
 import { productSchema } from '../../validations/product.validation';
 
-// Standard unit options: PCS, BOX, PACKET
+// Standard unit options: PCS, BOX, PACKET, PKT, TIN
 const UNIT_OPTIONS = [
   { value: 'PCS', label: 'PCS (Pieces)' },
   { value: 'BOX', label: 'BOX (Boxes)' },
+  { value: 'PKT', label: 'PKT (Packets)' },
+  { value: 'TIN', label: 'TIN (Tins)' },
   { value: 'PACKET', label: 'PACKET (Packets)' },
 ];
 

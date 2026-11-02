@@ -26,7 +26,7 @@ export default function Dashboard() {
   const apiBase = import.meta.env.VITE_API_BASE_URL || '';
 
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState('1W'); // 1D, 1W, 1M, 3M, 6M, 1Y
+  const [selectedPeriod, setSelectedPeriod] = useState('1M'); // 1D, 1W, 1M, 3M, 6M, 1Y
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [data, setData] = useState({
@@ -229,14 +229,14 @@ export default function Dashboard() {
     const isRangeActive = Boolean(kpi.hasCustomRange || startDate || endDate);
 
     if (isRangeActive) {
-      const rSales = kpi.rangeSales !== null && kpi.rangeSales !== undefined ? kpi.rangeSales : kpi.todaySales;
-      const rBills = kpi.rangeBills !== null && kpi.rangeBills !== undefined ? kpi.rangeBills : kpi.todayBills;
-      const rQty = kpi.rangeQty !== null && kpi.rangeQty !== undefined ? kpi.rangeQty : kpi.todayQty;
+      const rSales = kpi.rangeSales !== null && kpi.rangeSales !== undefined ? kpi.rangeSales : kpi.totalSales;
+      const rBills = kpi.rangeBills !== null && kpi.rangeBills !== undefined ? kpi.rangeBills : kpi.totalInvoices;
+      const rQty = kpi.rangeQty !== null && kpi.rangeQty !== undefined ? kpi.rangeQty : kpi.totalQtySold;
       const rAvg = kpi.rangeAvgBillValue !== null && kpi.rangeAvgBillValue !== undefined ? kpi.rangeAvgBillValue : kpi.avgBillValue;
 
       return [
         {
-          title: 'Range Sales',
+          title: 'Total Sales',
           value: `₹${Number(rSales || 0).toFixed(2)}`,
           subtext: 'Revenue for selected dates',
           icon: FiDollarSign,
@@ -247,7 +247,7 @@ export default function Dashboard() {
           badgeType: 'success',
         },
         {
-          title: 'Range Bills',
+          title: 'Total Invoices',
           value: `${rBills} Bills`,
           subtext: 'Receipts in selected dates',
           icon: FiFileText,
@@ -284,42 +284,42 @@ export default function Dashboard() {
 
     return [
       {
-        title: "Today's Sales",
-        value: `₹${Number(kpi.todaySales || 0).toFixed(2)}`,
-        subtext: 'Revenue collected today',
+        title: 'Total Sales',
+        value: `₹${Number(kpi.totalSales || 0).toFixed(2)}`,
+        subtext: kpi.todaySales > 0 ? `Today: ₹${Number(kpi.todaySales).toFixed(2)}` : 'Total revenue collected',
         icon: FiDollarSign,
         color: '#10B981',
         bgLight: 'bg-emerald-50',
         textColor: 'text-emerald-600',
-        badge: kpi.salesGrowthPct >= 0 ? `+${kpi.salesGrowthPct}%` : `${kpi.salesGrowthPct}%`,
-        badgeType: kpi.salesGrowthPct >= 0 ? 'success' : 'danger',
+        badge: kpi.todaySales > 0 ? `+₹${Math.round(kpi.todaySales)}` : 'All Time',
+        badgeType: 'success',
       },
       {
-        title: "Today's Bills",
-        value: `${kpi.todayBills} Bills`,
-        subtext: 'Receipts invoiced today',
+        title: 'Total Invoices',
+        value: `${kpi.totalInvoices || 0} Bills`,
+        subtext: kpi.todayBills > 0 ? `Today: ${kpi.todayBills} bills` : 'Generated outward bills',
         icon: FiFileText,
         color: '#FE9F43',
         bgLight: 'bg-[#FFF5EC]',
         textColor: 'text-[#FE9F43]',
-        badge: 'Today',
+        badge: `${kpi.totalInvoices || 0} Total`,
         badgeType: 'primary',
       },
       {
         title: 'Crackers Outward',
-        value: `${kpi.todayQty} Units`,
-        subtext: 'Boxes / PCS outwarded',
+        value: `${kpi.totalQtySold || 0} Units`,
+        subtext: kpi.todayQty > 0 ? `Today: ${kpi.todayQty} units` : 'Units & boxes invoiced',
         icon: FiPackage,
         color: '#6366F1',
         bgLight: 'bg-indigo-50',
         textColor: 'text-indigo-600',
-        badge: '+6%',
+        badge: 'Total Qty',
         badgeType: 'info',
       },
       {
         title: 'Average Ticket Value',
         value: `₹${Number(kpi.avgBillValue || 0).toFixed(2)}`,
-        subtext: 'Per customer spend',
+        subtext: 'Average ticket size',
         icon: FiTrendingUp,
         color: '#0D3B66',
         bgLight: 'bg-blue-50',

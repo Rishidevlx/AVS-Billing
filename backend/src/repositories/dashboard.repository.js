@@ -153,7 +153,28 @@ export const getDashboardSummary = async ({ period = '1W', startDate = null, end
     `;
   }
 
-  const [trendRows] = await pool.query(trendSql, trendParams);
+  let [trendRows] = await pool.query(trendSql, trendParams);
+
+  if (!hasCustomRange && period === '1W' && trendRows.length === 0) {
+    // If no sales in the immediate last 7 days, fallback to the latest active sales period (up to 30 days) so chart is never blank
+    const fallbackSql = `
+      SELECT 
+        DATE_FORMAT(invoice_date, '%Y-%m-%d') AS dateKey,
+        DATE_FORMAT(invoice_date, '%d %b') AS dateLabel,
+        COALESCE(SUM(grand_total), 0) AS totalSales,
+        COUNT(*) AS billCount,
+        COALESCE(SUM(total_qty), 0) AS totalQty
+      FROM invoices
+      WHERE invoice_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+      GROUP BY DATE_FORMAT(invoice_date, '%Y-%m-%d'), DATE_FORMAT(invoice_date, '%d %b')
+      ORDER BY dateKey ASC
+      LIMIT 7
+    `;
+    const [fbRows] = await pool.query(fallbackSql);
+    if (fbRows.length > 0) {
+      trendRows = fbRows;
+    }
+  }
 
   let finalTrend = trendRows;
   if (!hasCustomRange && period === '1D' && finalTrend.length === 0) {

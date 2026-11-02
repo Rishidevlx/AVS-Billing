@@ -24,8 +24,8 @@ export const createProductSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal('')),
-  unit: z.enum(['PCS', 'BOX', 'PACKET'], {
-    errorMap: () => ({ message: 'Unit must be PCS, BOX, or PACKET' }),
+  unit: z.enum(['PCS', 'BOX', 'PACKET', 'PKT', 'TIN'], {
+    errorMap: () => ({ message: 'Unit must be PCS, BOX, PACKET, PKT, or TIN' }),
   }),
   sellingPrice: z.coerce
     .number({ required_error: 'Selling price is required' })
