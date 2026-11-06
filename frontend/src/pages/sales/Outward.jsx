@@ -89,7 +89,7 @@ export default function Outward() {
       category: '',
       unit: 'PCS',
       rate: '',
-      qty: 1,
+      qty: '',
       total: 0,
     },
   ]);
@@ -181,8 +181,8 @@ export default function Outward() {
             category: it.category || '',
             unit: it.unit || 'PCS',
             rate: it.rate !== undefined && it.rate !== null ? it.rate : '',
-            qty: it.qty !== undefined && it.qty !== null ? it.qty : 1,
-            total: it.total !== undefined && it.total !== null ? it.total : (Number(it.rate || 0) * Number(it.qty || 1)),
+            qty: it.qty !== undefined && it.qty !== null ? String(it.qty) : '',
+            total: it.total !== undefined && it.total !== null ? Number(it.total) : (Number(it.rate || 0) * (Number(it.qty) || 0)),
           }))
         );
       }
@@ -256,7 +256,7 @@ export default function Outward() {
         category: '',
         unit: 'PCS',
         rate: '',
-        qty: 1,
+        qty: '',
         total: 0,
       },
     ]);
@@ -356,7 +356,7 @@ export default function Outward() {
           }
 
           const rate = Number(selectedProd.sellingPrice || 0);
-          const qty = Number(item.qty || 1);
+          const qtyNum = item.qty === '' ? 0 : Number(item.qty);
           return {
             ...item,
             productId: selectedProd.id,
@@ -364,7 +364,7 @@ export default function Outward() {
             category: selectedProd.category || item.category || '',
             unit: selectedProd.unit || 'PCS',
             rate: rate,
-            total: rate * qty,
+            total: rate * (isNaN(qtyNum) ? 0 : qtyNum),
           };
         }
         return item;
@@ -379,8 +379,9 @@ export default function Outward() {
         if (item.id === id) {
           const updated = { ...item, [field]: value };
           const rate = Number(field === 'rate' ? value : updated.rate) || 0;
-          const qty = Number(field === 'qty' ? value : updated.qty) || 0;
-          updated.total = rate * qty;
+          const qtyVal = field === 'qty' ? value : updated.qty;
+          const qtyNum = qtyVal === '' ? 0 : Number(qtyVal);
+          updated.total = rate * (isNaN(qtyNum) ? 0 : qtyNum);
           return updated;
         }
         return item;
@@ -437,7 +438,7 @@ export default function Outward() {
           category: '',
           unit: 'PCS',
           rate: '',
-          qty: 1,
+          qty: '',
           total: 0,
         },
       ]);
@@ -466,9 +467,21 @@ export default function Outward() {
       return;
     }
 
-    const validItems = items.filter((i) => i.productName && Number(i.qty) > 0);
+    // Check if any selected item has invalid/missing quantity
+    const invalidQtyItem = items.find(
+      (i) => i.productName && (i.qty === '' || Number(i.qty) < 1)
+    );
+    if (invalidQtyItem) {
+      showToast(
+        `Please enter a quantity of at least 1 for "${invalidQtyItem.productName}"`,
+        'warning'
+      );
+      return;
+    }
+
+    const validItems = items.filter((i) => i.productName && Number(i.qty) >= 1);
     if (validItems.length === 0) {
-      showToast('Please select at least one product with quantity', 'warning');
+      showToast('Please select at least one product with quantity (minimum 1)', 'warning');
       return;
     }
 
@@ -592,7 +605,7 @@ export default function Outward() {
           category: '',
           unit: 'PCS',
           rate: '',
-          qty: 1,
+          qty: '',
           total: 0,
         },
       ]);
@@ -706,7 +719,7 @@ export default function Outward() {
 
   // Selected items list for summary breakdown
   const selectedItemsList = useMemo(() => {
-    return items.filter((i) => i.productName && Number(i.qty) > 0);
+    return items.filter((i) => i.productName && Number(i.qty) >= 1);
   }, [items]);
 
   return (
@@ -1020,14 +1033,14 @@ export default function Outward() {
                           <input
                             type="number"
                             min="1"
+                            placeholder="0"
                             value={item.qty}
-                            onChange={(e) =>
-                              handleItemValueChange(
-                                item.id,
-                                'qty',
-                                Math.max(1, parseInt(e.target.value) || 1)
-                              )
-                            }
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '' || /^\d+$/.test(val)) {
+                                handleItemValueChange(item.id, 'qty', val);
+                              }
+                            }}
                             className="w-full text-center py-2 px-3 bg-white border border-gray-200 rounded-lg text-[13.5px] font-bold text-[#212B36] outline-none focus:border-[#FE9F43] focus:ring-1 focus:ring-[#FE9F43]/20 shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         </td>
@@ -1174,14 +1187,14 @@ export default function Outward() {
                           <input
                             type="number"
                             min="1"
+                            placeholder="0"
                             value={item.qty}
-                            onChange={(e) =>
-                              handleItemValueChange(
-                                item.id,
-                                'qty',
-                                Math.max(1, parseInt(e.target.value) || 1)
-                              )
-                            }
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '' || /^\d+$/.test(val)) {
+                                handleItemValueChange(item.id, 'qty', val);
+                              }
+                            }}
                             className="w-full text-center py-2 px-2 bg-white border border-gray-200 rounded-lg text-[13px] font-bold text-[#212B36] outline-none focus:border-[#FE9F43] shadow-2xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         </div>

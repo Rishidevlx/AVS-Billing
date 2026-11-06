@@ -367,18 +367,18 @@ export async function generateInvoicePdf(invoice, items = [], company = {}, bank
       // Table Column Definitions
       const tableX = marginX;
       const cols = {
-        colSNoWidth: 36,
+        colSNoWidth: 30,
         colNameWidth: 175,
-        colCatWidth: 100,
-        colQtyWidth: 45,
-        colRateWidth: 80,
-        colAmtWidth: 87.28,
+        colCatWidth: 120,
+        colQtyWidth: 40,
+        colRateWidth: 75,
+        colAmtWidth: 83.28,
         colSNoX: tableX,
-        colNameX: tableX + 36,
-        colCatX: tableX + 36 + 175,
-        colQtyX: tableX + 36 + 175 + 100,
-        colRateX: tableX + 36 + 175 + 100 + 45,
-        colAmtX: tableX + 36 + 175 + 100 + 45 + 80,
+        colNameX: tableX + 30,
+        colCatX: tableX + 30 + 175,
+        colQtyX: tableX + 30 + 175 + 120,
+        colRateX: tableX + 30 + 175 + 120 + 40,
+        colAmtX: tableX + 30 + 175 + 120 + 40 + 75,
       };
 
       const topConfig = {
@@ -412,16 +412,26 @@ export async function generateInvoicePdf(invoice, items = [], company = {}, bank
       let totalQty = 0;
       let calculatedSubtotal = 0;
 
-      // Render Each Item Row with Multi-Page Detection
+      // Render Each Item Row with Dynamic Row Height and Multi-Page Detection
       items.forEach((item, index) => {
         const isLastItem = index === items.length - 1;
+
+        const prodName = item.productName || item.name || 'Product Item';
+        const catName = item.category || '-';
+
+        // Calculate dynamic text height to accommodate multi-line categories and product names
+        doc.font('Helvetica').fontSize(8.5);
+        const nameHeight = doc.heightOfString(prodName, { width: cols.colNameWidth - 10 });
+        const catHeight = doc.heightOfString(catName, { width: cols.colCatWidth - 8 });
+        const textMaxHeight = Math.max(nameHeight, catHeight);
+        const currentRowHeight = Math.max(22, Math.ceil(textMaxHeight + 8));
 
         // Check if adding this row would cause overflow:
         // - If last item: check if item + bottom section fits
         // - If not last item: check if item fits before footer
         const needNewPage = isLastItem
-          ? (currentY + rowHeight > maxTableYForFinalItems)
-          : (currentY + rowHeight > maxTableYBeforeFooter - 10);
+          ? (currentY + currentRowHeight > maxTableYForFinalItems)
+          : (currentY + currentRowHeight > maxTableYBeforeFooter - 10);
 
         if (needNewPage) {
           // Add New Page
@@ -442,14 +452,14 @@ export async function generateInvoicePdf(invoice, items = [], company = {}, bank
         const isZebra = index % 2 === 1;
         if (isZebra) {
           doc
-            .rect(tableX, currentY, contentWidth, rowHeight)
+            .rect(tableX, currentY, contentWidth, currentRowHeight)
             .fill(bgLight);
         }
 
         // Bottom border line for row
         doc
-          .moveTo(tableX, currentY + rowHeight)
-          .lineTo(tableX + contentWidth, currentY + rowHeight)
+          .moveTo(tableX, currentY + currentRowHeight)
+          .lineTo(tableX + contentWidth, currentY + currentRowHeight)
           .strokeColor(borderSlate)
           .lineWidth(0.5)
           .stroke();
@@ -465,16 +475,12 @@ export async function generateInvoicePdf(invoice, items = [], company = {}, bank
         doc.font('Helvetica').fontSize(8.5).fillColor(textDark);
         doc.text(String(index + 1), cols.colSNoX, currentY + 5.5, { width: cols.colSNoWidth, align: 'center' });
 
-        const prodName = item.productName || item.name || 'Product Item';
         doc.text(prodName, cols.colNameX + 6, currentY + 5.5, {
           width: cols.colNameWidth - 10,
-          ellipsis: true,
         });
 
-        const catName = item.category || '-';
         doc.text(catName, cols.colCatX + 4, currentY + 5.5, {
           width: cols.colCatWidth - 8,
-          ellipsis: true,
         });
 
         doc.text(String(itemQty), cols.colQtyX, currentY + 5.5, { width: cols.colQtyWidth, align: 'center' });
@@ -484,28 +490,29 @@ export async function generateInvoicePdf(invoice, items = [], company = {}, bank
           align: 'right',
         });
 
-        currentY += rowHeight;
+        currentY += currentRowHeight;
       });
 
       // ==========================================
       // FINAL SUMMARY ROW (Total Items, Total Qty, Subtotal)
       // ==========================================
+      const summaryRowHeight = 22;
       const subtotalVal = Number(invoice.subtotal) || calculatedSubtotal;
       doc
-        .rect(tableX, currentY, contentWidth, rowHeight)
+        .rect(tableX, currentY, contentWidth, summaryRowHeight)
         .fill(tableHeaderBg);
       doc
-        .rect(tableX, currentY, contentWidth, rowHeight)
+        .rect(tableX, currentY, contentWidth, summaryRowHeight)
         .strokeColor(borderDarker)
         .lineWidth(0.75)
         .stroke();
 
       doc.font('Helvetica-Bold').fontSize(8.5).fillColor(textDark);
-      doc.text(`Total Items: ${items.length}`, cols.colNameX + 6, currentY + 5.5);
-      doc.text(String(totalQty), cols.colQtyX, currentY + 5.5, { width: cols.colQtyWidth, align: 'center' });
-      doc.text(formatCurrency(subtotalVal), cols.colAmtX, currentY + 5.5, { width: cols.colAmtWidth - 6, align: 'right' });
+      doc.text(`Total Items: ${items.length}`, cols.colNameX + 6, currentY + 6);
+      doc.text(String(totalQty), cols.colQtyX, currentY + 6, { width: cols.colQtyWidth, align: 'center' });
+      doc.text(formatCurrency(subtotalVal), cols.colAmtX, currentY + 6, { width: cols.colAmtWidth - 6, align: 'right' });
 
-      currentY += rowHeight + 14;
+      currentY += summaryRowHeight + 14;
 
       // ==========================================
       // BOTTOM SECTION (Amounts Breakdown, Signatory, Note)
