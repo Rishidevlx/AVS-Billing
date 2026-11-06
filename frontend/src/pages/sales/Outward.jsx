@@ -174,16 +174,24 @@ export default function Outward() {
       const loadedItems = editInv.items || [];
       if (loadedItems.length > 0) {
         setItems(
-          loadedItems.map((it, idx) => ({
-            id: it.id || Date.now() + idx,
-            productId: it.productId || it.product_id || '',
-            productName: it.productName || it.product_name || '',
-            category: it.category || '',
-            unit: it.unit || 'PCS',
-            rate: it.rate !== undefined && it.rate !== null ? it.rate : '',
-            qty: it.qty !== undefined && it.qty !== null ? String(it.qty) : '',
-            total: it.total !== undefined && it.total !== null ? Number(it.total) : (Number(it.rate || 0) * (Number(it.qty) || 0)),
-          }))
+          loadedItems.map((it, idx) => {
+            const qtyVal = it.qty !== undefined && it.qty !== null ? String(it.qty).trim() : '';
+            const isValidQty = qtyVal !== '' && Number.isFinite(Number(qtyVal)) && Number(qtyVal) > 0;
+            const totalVal = isValidQty
+              ? (it.total !== undefined && it.total !== null ? Number(it.total) : (Number(it.rate || 0) * Number(qtyVal)))
+              : 0;
+
+            return {
+              id: it.id || Date.now() + idx,
+              productId: it.productId || it.product_id || '',
+              productName: it.productName || it.product_name || '',
+              category: it.category || '',
+              unit: it.unit || 'PCS',
+              rate: it.rate !== undefined && it.rate !== null ? it.rate : '',
+              qty: qtyVal,
+              total: totalVal,
+            };
+          })
         );
       }
       if (editInv.discountPercent !== undefined && editInv.discountPercent !== null) {
@@ -467,13 +475,26 @@ export default function Outward() {
       return;
     }
 
-    // Check if any selected item has invalid/missing quantity
-    const invalidQtyItem = items.find(
-      (i) => i.productName && (i.qty === '' || Number(i.qty) < 1)
-    );
+    // Check if any selected item has invalid/missing/non-numeric quantity
+    const invalidQtyItem = items.find((i) => {
+      const hasProduct = Boolean(i.productName || i.productId);
+      if (!hasProduct) return false;
+
+      const rawQty = i.qty;
+      const numQty = Number(rawQty);
+      const isInvalid =
+        rawQty === '' ||
+        rawQty === null ||
+        rawQty === undefined ||
+        !Number.isFinite(numQty) ||
+        numQty < 1;
+
+      return isInvalid;
+    });
+
     if (invalidQtyItem) {
       showToast(
-        `Please enter a quantity of at least 1 for "${invalidQtyItem.productName}"`,
+        `Please enter a valid quantity of at least 1 for "${invalidQtyItem.productName || 'selected product'}"`,
         'warning'
       );
       return;
