@@ -177,8 +177,9 @@ export default function Outward() {
           loadedItems.map((it, idx) => {
             const qtyVal = it.qty !== undefined && it.qty !== null ? String(it.qty).trim() : '';
             const isValidQty = qtyVal !== '' && Number.isFinite(Number(qtyVal)) && Number(qtyVal) > 0;
+            const hasFiniteStoredTotal = it.total !== undefined && it.total !== null && it.total !== '' && Number.isFinite(Number(it.total));
             const totalVal = isValidQty
-              ? (it.total !== undefined && it.total !== null ? Number(it.total) : (Number(it.rate || 0) * Number(qtyVal)))
+              ? (hasFiniteStoredTotal ? Number(it.total) : (Number(it.rate || 0) * Number(qtyVal)))
               : 0;
 
             return {
@@ -487,6 +488,7 @@ export default function Outward() {
         rawQty === null ||
         rawQty === undefined ||
         !Number.isFinite(numQty) ||
+        !Number.isInteger(numQty) ||
         numQty < 1;
 
       return isInvalid;
@@ -494,7 +496,7 @@ export default function Outward() {
 
     if (invalidQtyItem) {
       showToast(
-        `Please enter a valid quantity of at least 1 for "${invalidQtyItem.productName || 'selected product'}"`,
+        `Please enter a valid whole number quantity of at least 1 for "${invalidQtyItem.productName || 'selected product'}"`,
         'warning'
       );
       return;

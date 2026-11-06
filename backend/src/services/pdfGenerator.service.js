@@ -424,14 +424,15 @@ export async function generateInvoicePdf(invoice, items = [], company = {}, bank
         const nameHeight = doc.heightOfString(prodName, { width: cols.colNameWidth - 10 });
         const catHeight = doc.heightOfString(catName, { width: cols.colCatWidth - 8 });
         const textMaxHeight = Math.max(nameHeight, catHeight);
-        let currentRowHeight = Math.max(22, Math.ceil(textMaxHeight + 8));
+        const naturalRowHeight = Math.max(22, Math.ceil(textMaxHeight + 8));
 
         // Cap maximum row height to usable height on a fresh page so a single row
         // cannot overflow usable table bounds or push table lines past footers
         const maxFreshPageRowHeight = isLastItem
           ? Math.max(80, maxTableYForFinalItems - 140)
           : Math.max(80, maxTableYBeforeFooter - 140);
-        currentRowHeight = Math.min(currentRowHeight, maxFreshPageRowHeight);
+        const isRowCapped = naturalRowHeight > maxFreshPageRowHeight;
+        const currentRowHeight = isRowCapped ? maxFreshPageRowHeight : naturalRowHeight;
 
         // Check if adding this row would cause overflow:
         // - If last item: check if item + bottom section fits
@@ -482,17 +483,19 @@ export async function generateInvoicePdf(invoice, items = [], company = {}, bank
         doc.font('Helvetica').fontSize(8.5).fillColor(textDark);
         doc.text(String(index + 1), cols.colSNoX, currentY + 5.5, { width: cols.colSNoWidth, align: 'center' });
 
-        doc.text(prodName, cols.colNameX + 6, currentY + 5.5, {
+        const nameOptions = {
           width: cols.colNameWidth - 10,
-          height: currentRowHeight - 11,
-          ellipsis: true,
-        });
+          height: isRowCapped ? currentRowHeight - 11 : Math.max(14, nameHeight + 2),
+        };
+        if (isRowCapped) nameOptions.ellipsis = true;
+        doc.text(prodName, cols.colNameX + 6, currentY + 5.5, nameOptions);
 
-        doc.text(catName, cols.colCatX + 4, currentY + 5.5, {
+        const catOptions = {
           width: cols.colCatWidth - 8,
-          height: currentRowHeight - 11,
-          ellipsis: true,
-        });
+          height: isRowCapped ? currentRowHeight - 11 : Math.max(14, catHeight + 2),
+        };
+        if (isRowCapped) catOptions.ellipsis = true;
+        doc.text(catName, cols.colCatX + 4, currentY + 5.5, catOptions);
 
         doc.text(String(itemQty), cols.colQtyX, currentY + 5.5, { width: cols.colQtyWidth, align: 'center' });
         doc.text(itemRate.toFixed(2), cols.colRateX, currentY + 5.5, { width: cols.colRateWidth - 6, align: 'right' });
